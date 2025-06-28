@@ -3,7 +3,7 @@
 ;; Author: swarm contributors
 ;; URL: https://github.com/swarm-game/swarm
 ;; Version: 0.1
-;; Package-Requires: ((emacs-lsp))
+;; Package-Requires: ((eglot))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -13,7 +13,7 @@
 ;;
 ;;; Code:
 
-(require 'lsp-mode)
+(require 'eglot)
 
 (defvar swarm-mode-syntax-table
   (let ((synTable (make-syntax-table)))
@@ -193,19 +193,16 @@
 (define-derived-mode swarm-mode prog-mode "Swarm Lang Mode"
   "Major mode for editing Swarm language files."
   (setq font-lock-defaults '((swarm-font-lock-keywords)))
-  (set-syntax-table swarm-mode-syntax-table))
+  (set-syntax-table swarm-mode-syntax-table)
+  (when (featurep 'eglot)
+    (eglot-ensure)))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.sw\\'" . swarm-mode))
 
-(with-eval-after-load 'lsp-mode
-  (add-to-list 'lsp-language-id-configuration
-               '(swarm-mode . "swarm"))
-
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection (list "swarm" "lsp"))
-                    :activation-fn (lsp-activate-on "swarm")
-                    :server-id 'swarm-check)))
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '(swarm-mode . ("swarm" "lsp"))))
 
 (provide 'swarm-mode)
 ;;; swarm-mode.el ends here
